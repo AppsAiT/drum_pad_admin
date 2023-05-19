@@ -1,11 +1,16 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firabase_storage;
-import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
+import 'package:firebase/firebase.dart' as fb;
 
 class AddSong extends StatefulWidget {
   const AddSong({super.key});
@@ -15,90 +20,88 @@ class AddSong extends StatefulWidget {
 }
 
 class _AddSongState extends State<AddSong> {
+  final _formkey = GlobalKey<FormState>();
+  late final TextEditingController _songTitleController,
+      _songSubTitleController;
+  File? _pickedImage;
+  Uint8List webImage = Uint8List(8);
+
   @override
-  Widget build(BuildContext context) {
-    String selectedFile = '';
-    Uint8List? selectedImageInBytes;
-    String imageUrl = '';
-    TextEditingController _songTitleController = TextEditingController();
-    TextEditingController _songSubTitleController = TextEditingController();
-    bool isItemSaved = false;
+  void initState() {
+    _songTitleController = TextEditingController();
+    _songSubTitleController = TextEditingController();
 
-    @override
-    void initState() {
-      //deleteVegetable();
-      super.initState();
-    }
+    super.initState();
+  }
 
-    @override
-    void dispose() {
+  @override
+  void dispose() {
+    if (mounted) {
       _songTitleController.dispose();
       _songSubTitleController.dispose();
-      super.dispose();
     }
 
-    _selectFile(bool imageFrom) async {
-      FilePickerResult? fileResult =
-          await FilePicker.platform.pickFiles(allowMultiple: false);
+    super.dispose();
+  }
 
-      if (fileResult != null) {
-        selectedFile = fileResult.files.first.name;
-        setState(() {
-          selectedImageInBytes = fileResult.files.first.bytes;
-        });
+  void _uploadForm() async {
+    final isValid = _formkey.currentState!.validate();
+    FocusScope.of(context).unfocus();
+
+    if (isValid) {
+      _formkey.currentState!.save();
+      if (_pickedImage == null) {
+        print(
+            '------------------------------- Image Empty -------------------------------');
       }
-      print(selectedFile);
-    }
-
-    Future<String> _uploadFile() async {
-      String imageUrl = '';
+      final _uuid = const Uuid().v4();
       try {
-        firabase_storage.UploadTask uploadTask;
-        firabase_storage.Reference ref = firabase_storage
-            .FirebaseStorage.instance
-            .ref()
-            .child('demosongs')
-            .child('/$selectedFile');
-
-        final metadata =
-            firabase_storage.SettableMetadata(contentType: 'demoimage/');
-
-        //uploadTask = ref.putFile(File(file.path));
-        uploadTask = ref.putData(selectedImageInBytes!, metadata);
-
-        await uploadTask.whenComplete(() => null);
-        imageUrl = await ref.getDownloadURL();
-      } catch (e) {
-        print('----------------------------------------');
-        print(e);
-      }
-      return imageUrl;
-    }
-
-    saveItem() async {
-      setState(() {
-        isItemSaved = true;
-      });
-      String imgURL = await _uploadFile();
-      print('Image Url : $imgURL');
-
-      await FirebaseFirestore.instance.collection('demoSongs').add(
-        {
+        setState(() {});
+        fb.StorageReference storageRef =
+            fb.storage().ref().child('SongImage').child(_uuid + 'jpg');
+        final fb.UploadTaskSnapshot uploadTaskSnapshot =
+            await storageRef.put(kIsWeb ? webImage : _pickedImage).future;
+        Uri imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
+        await FirebaseFirestore.instance
+            .collection('DemoSongs')
+            .doc(_uuid)
+            .set({
+          'id': _uuid,
           'title': _songTitleController.text,
           'subtitle': _songSubTitleController.text,
-          'img': imgURL,
-          'song': '',
-          'createdOn': DateTime.now().toIso8601String(),
-        },
-      ).then((value) {
-        setState(() {
-          isItemSaved = false;
+          'image': imageUri.toString(),
+          'createdOn': Timestamp.now(),
         });
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: ((context) => const AddSong())));
-      });
+        _clearForm();
+        Fluttertoast.showToast(
+          msg: 'Song Uploaded Successfully',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+        );
+      } on FirebaseException catch (error) {
+        print('------------ ${error.message}');
+        setState(() {});
+      } catch (error) {
+        print('------------ ${error}');
+        setState(() {});
+      } finally {
+        setState(() {});
+      }
     }
+  }
 
+  void _clearForm() {
+    _songSubTitleController.clear();
+    _songTitleController.clear();
+    setState(() {
+      _pickedImage = null;
+      webImage = Uint8List(8);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
@@ -113,8 +116,15 @@ class _AddSongState extends State<AddSong> {
               child: Row(
                 children: [
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: _songTitleController,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter song title';
+                        } else {
+                          return null;
+                        }
+                      },
                       decoration: const InputDecoration(
                         filled: true,
                         fillColor: Color.fromARGB(255, 38, 37, 49),
@@ -126,8 +136,15 @@ class _AddSongState extends State<AddSong> {
                   ),
                   const SizedBox(width: 30),
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: _songSubTitleController,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter song sub title';
+                        } else {
+                          return null;
+                        }
+                      },
                       decoration: const InputDecoration(
                         filled: true,
                         fillColor: Color.fromARGB(255, 38, 37, 49),
@@ -149,14 +166,8 @@ class _AddSongState extends State<AddSong> {
                     child: Padding(
                       padding: const EdgeInsets.only(right: 18),
                       child: InkWell(
-                        onTap: () async {
-                          await _selectFile(false);
-                          // FilePickerResult? file = await FilePicker.platform
-                          //     .pickFiles(allowMultiple: false);
-                          // if (file != null) {
-                          //   selectedFile = file.files.first.name;
-                          //   selectedImageInBytes = file.files.first.bytes;
-                          // }
+                        onTap: () {
+                          _pickImage();
                         },
                         child: Container(
                           height: 50,
@@ -210,12 +221,20 @@ class _AddSongState extends State<AddSong> {
                       ),
                       child: Center(
                         child: Container(
-                          child: selectedFile.isEmpty
+                          child: _pickedImage == null
                               ? Image.asset(
                                   'Assets/defaultImage.jpg',
                                   fit: BoxFit.cover,
                                 )
-                              : Image.memory(selectedImageInBytes!),
+                              : kIsWeb
+                                  ? Image.memory(
+                                      webImage,
+                                      fit: BoxFit.fill,
+                                    )
+                                  : Image.file(
+                                      _pickedImage!,
+                                      fit: BoxFit.fill,
+                                    ),
                         ),
                       ),
                     ),
@@ -223,30 +242,65 @@ class _AddSongState extends State<AddSong> {
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(
-                    10,
-                  ),
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    saveItem();
-                  },
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20, horizontal: 15),
+                    child: Container(
+                      // width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(
+                          10,
+                        ),
+                      ),
+                      child: TextButton(
+                        onPressed: () {
+                          _clearForm();
+                        },
+                        child: const Text(
+                          'Clear',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20, horizontal: 15),
+                    child: Container(
+                      // width: MediaQuery.of(context).size.width,/
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(
+                          10,
+                        ),
+                      ),
+                      child: TextButton(
+                        onPressed: () {
+                          _uploadForm();
+                        },
+                        child: const Text(
+                          'Save',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -269,5 +323,34 @@ class _AddSongState extends State<AddSong> {
         // ),
       ),
     );
+  }
+
+  Future<void> _pickImage() async {
+    if (!kIsWeb) {
+      final ImagePicker _picker = ImagePicker();
+      XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        var selected = File(image.path);
+        setState(() {
+          _pickedImage = selected;
+        });
+      } else {
+        print('No Image has been Picked');
+      }
+    } else if (kIsWeb) {
+      final ImagePicker _picker = ImagePicker();
+      XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        var f = await image.readAsBytes();
+        setState(() {
+          webImage = f;
+          _pickedImage = File('a');
+        });
+      } else {
+        print('No Image has been picked');
+      }
+    } else {
+      print('Something went wrong');
+    }
   }
 }

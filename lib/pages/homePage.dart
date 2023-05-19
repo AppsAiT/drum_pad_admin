@@ -2,6 +2,7 @@ import 'package:drum_pad_admin/pages/addSong.dart';
 import 'package:drum_pad_admin/pages/allSongsPage.dart';
 import 'package:drum_pad_admin/pages/trendingSongsPage.dart';
 import 'package:drum_pad_admin/widgets/homePageButtons.dart';
+import 'package:drum_pad_admin/widgets/sideBar.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -17,6 +18,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const SideBar(),
       appBar: AppBar(
         title: Text(widget.title),
       ),
@@ -73,3 +75,9 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+//=============================================================================
+//============================= Responsive Drawer =============================
+//=============================================================================
+
+

@@ -1,3 +1,4 @@
+import 'package:drum_pad_admin/widgets/uploadImage.dart';
 import 'package:flutter/material.dart';
 
 class AllSongsPage extends StatefulWidget {
@@ -15,13 +16,18 @@ class _AllSongsPageState extends State<AllSongsPage> {
       appBar: AppBar(
         title: const Text('ALL SONGS'),
       ),
-      body: const Center(
-        child: Text(
-          'ALL SONGS LIST',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-          ),
+      body: Center(
+        child: Column(
+          children: const [
+            Text(
+              'ALL SONGS LIST',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+              ),
+            ),
+            ImageUploadWidget(),
+          ],
         ),
       ),
     );
