@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drum_pad_admin/pages/homePage.dart';
-import 'package:drum_pad_admin/widgets/homePageTiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -113,7 +112,6 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // const SizedBox(height: 50),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 20),
                         child: Text(

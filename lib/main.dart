@@ -1,6 +1,9 @@
+import 'package:drum_pad_admin/pages/allSongsPage.dart';
 import 'package:drum_pad_admin/pages/loginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import 'pages/homePage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +38,8 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.cyan,
       ),
       home: const LoginPage(),
-      // home: const MyHomePage(title: 'Drum Pad Machine Admin'),
+      // home: const MyHomePage(title: 'Admin App'),
+      // home: const AllSongsPage(),
     );
   }
 }

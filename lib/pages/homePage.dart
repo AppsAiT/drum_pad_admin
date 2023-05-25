@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:drum_pad_admin/pages/addSong.dart';
+import 'package:drum_pad_admin/pages/allSongsPage.dart';
 import 'package:drum_pad_admin/widgets/homePageTiles.dart';
 import 'package:drum_pad_admin/widgets/sideBar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, required this.currentUser});
+  const MyHomePage({super.key, required this.title, this.currentUser});
 
   final String title;
   final User? currentUser;
@@ -19,7 +21,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String timeText = '';
   String dateText = '';
-  String name = '';
+  String name = 'Vikram Demo';
 
   String formatCurrentLiveTime(DateTime time) {
     return DateFormat('hh:mm:ss a').format(time);
@@ -124,8 +126,38 @@ class _MyHomePageState extends State<MyHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                HomePageTile(title: 'ALL SONGS', image: 'Assets/guitar.png'),
-                HomePageTile(title: 'ADD SONGS', image: 'Assets/addSongs.png'),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 13, left: 13, right: 13, bottom: 8),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (builder) => const AllSongsPage()));
+                    },
+                    child: HomePageTile(
+                      title: 'ALL SONGS',
+                      image: 'Assets/guitar.png',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 13, left: 13, right: 13, bottom: 8),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (builder) => const AddSong()));
+                    },
+                    child: HomePageTile(
+                      title: 'ADD SONGS',
+                      image: 'Assets/addSongs.png',
+                    ),
+                  ),
+                ),
                 // HomePageTile(
                 //     title: 'TRENDING SONGS', image: 'Assets/guitar.png'),
               ],
