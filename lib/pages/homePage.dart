@@ -21,7 +21,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String timeText = '';
   String dateText = '';
-  String name = 'Vikram Demo';
+  String name = 'Loading...';
 
   String formatCurrentLiveTime(DateTime time) {
     return DateFormat('hh:mm:ss a').format(time);
@@ -69,6 +69,23 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // bottomSheet: Row(
+      //   mainAxisAlignment: MainAxisAlignment.end,
+      //   children: [
+      //     Container(
+      //       color: Colors.black87,
+      //       width: MediaQuery.of(context).size.width,
+      //       child: const Text(
+      //         '--- Developed by AppsAiT ---',
+      //         style: TextStyle(
+      //           color: Colors.grey,
+      //           fontSize: 18,
+      //           fontWeight: FontWeight.w600,
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -184,7 +201,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 // HomePageTile(
                 //     title: 'TRENDING SONGS', image: 'Assets/guitar.png'),
               ],
-            )
+            ),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(13),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
+                    '--- Developed by AppsAiT ---',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

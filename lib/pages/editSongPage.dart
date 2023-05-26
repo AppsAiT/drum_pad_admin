@@ -119,7 +119,7 @@ class _EditSongState extends State<EditSong> {
         },
       );
     }
-    if (widget.Imageurl != NewImageUrl) {
+    if (NewImageUrl != null) {
       FirebaseFirestore.instance.collection('DemoSongs').doc(widget.id).update({
         'imgUrl': NewImageUrl,
       }).then((value) {
@@ -259,16 +259,16 @@ class _EditSongState extends State<EditSong> {
                   width: 250,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    color: Colors.cyanAccent,
+                    // color: Colors.cyanAccent,
                   ),
                   child: NewImageUrl == null
                       ? Image.network(
                           widget.Imageurl,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                         )
                       : Image.network(
                           NewImageUrl!,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                         ),
                 ),
                 const SizedBox(width: 40),
@@ -584,11 +584,13 @@ class _EditSongState extends State<EditSong> {
                             10,
                           ),
                         ),
-                        child: const Text(
-                          'Update',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
+                        child: const Center(
+                          child: Text(
+                            'Update',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),

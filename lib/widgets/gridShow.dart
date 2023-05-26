@@ -32,11 +32,11 @@ class _GridDisplayState extends State<GridDisplay> {
               return song['trending'] == widget.ftrending &&
                   song['genre'] == widget.fgenre;
             }).toList();
-          } else if (widget.fgenre != null && widget.fgenre == null) {
+          } else if (widget.ftrending != null && widget.fgenre == null) {
             filteredSongs = songs!.where((song) {
               return song['trending'] == widget.ftrending;
             }).toList();
-          } else if (widget.fgenre == null && widget.fgenre != null) {
+          } else if (widget.ftrending == null && widget.fgenre != null) {
             filteredSongs = songs!.where((song) {
               return song['genre'] == widget.fgenre;
             }).toList();
