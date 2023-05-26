@@ -59,6 +59,8 @@ dependencies:
   intl: ^0.18.1
   firebase_auth: ^4.6.1
   permission_handler: ^10.2.0
+  firebase_core_web:
+  firebase_storage_web:
 
 dev_dependencies:
   flutter_test:

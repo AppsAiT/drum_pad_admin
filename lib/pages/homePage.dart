@@ -69,7 +69,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const SideBar(),
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -111,14 +110,38 @@ class _MyHomePageState extends State<MyHomePage> {
                       letterSpacing: 3,
                     ),
                   ),
-                  Text(
-                    '$timeText \n$dateText',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      letterSpacing: 3,
-                    ),
+                  Row(
+                    children: [
+                      Column(
+                        children: const [
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13),
+                            child: Icon(
+                              Icons.access_time_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13),
+                            child: Icon(
+                              Icons.calendar_month_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '$timeText \n$dateText',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: 3,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

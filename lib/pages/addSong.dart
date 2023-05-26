@@ -1,18 +1,10 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:firebase_core/firebase_core.dart';
+// ignore_for_file: avoid_web_libraries_in_flutter, file_names
+
+import 'dart:html';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firabase_storage;
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
-import 'package:firebase/firebase.dart' as fb;
-import 'package:permission_handler/permission_handler.dart';
 
 class AddSong extends StatefulWidget {
   const AddSong({super.key});
@@ -25,9 +17,9 @@ class _AddSongState extends State<AddSong> {
   final _formkey = GlobalKey<FormState>();
   late final TextEditingController _songTitleController,
       _songSubTitleController;
-  File? _pickedImage;
-  Uint8List webImage = Uint8List(8);
-  var path, imgUrl;
+  String? imgUrl, genre, trending, songUrl;
+  late String docID;
+  late Map<String, dynamic> songData;
 
   @override
   void initState() {
@@ -47,105 +39,113 @@ class _AddSongState extends State<AddSong> {
     super.dispose();
   }
 
-  // void _uploadForm() async {
-  //   final isValid = _formkey.currentState!.validate();
-  //   FocusScope.of(context).unfocus();
+  validator() {
+    if (_songTitleController.text != '' &&
+        _songSubTitleController.text != '' &&
+        genre != null &&
+        trending != null &&
+        imgUrl != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-  //   if (isValid) {
-  //     _formkey.currentState!.save();
-  //     // if (_pickedImage == null) {
-  //     //   print(
-  //     //       '------------------------------- Image Empty -------------------------------');
-  //     // }
-  //     final _uuid = const Uuid().v4();
-  //     // try {
-  //     //   setState(() {});
-  //     fb.StorageReference storageRef =
-  //         fb.storage().ref().child('SongImage').child('${_uuid}jpg');
-  //     final fb.UploadTaskSnapshot uploadTaskSnapshot =
-  //         await storageRef.put(kIsWeb ? webImage : _pickedImage).future;
-  //     Uri imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
-
-  //     print('Title : ${_songTitleController.text}');
-  //     print('SubTitle : ${_songSubTitleController.text}');
-  //     print('Image : ${imageUri.toString()}');
-  //     //   await FirebaseFirestore.instance
-  //     //       .collection('DemoSongs')
-  //     //       .doc(_uuid)
-  //     //       .set({
-  //     //     'id': _uuid,
-  //     //     'title': _songTitleController.text,
-  //     //     'subtitle': _songSubTitleController.text,
-  //     // 'image': imageUri.toString(),
-  //     //     'createdOn': Timestamp.now(),
-  //     //   });
-  //     //   _clearForm();
-  //     //   Fluttertoast.showToast(
-  //     //     msg: 'Song Uploaded Successfully',
-  //     //     toastLength: Toast.LENGTH_LONG,
-  //     //     gravity: ToastGravity.BOTTOM,
-  //     //     timeInSecForIosWeb: 1,
-  //     //   );
-  //     // } on FirebaseException catch (error) {
-  //     //   print('------------ ${error.message}');
-  //     //   setState(() {});
-  //     // } catch (error) {
-  //     //   print('------------ ${error}');
-  //     //   setState(() {});
-  //     // } finally {
-  //     //   setState(() {});
-  //     // }
-  //   }
-  // }
-
-  void _pickImage() async {
-    final pickedImageFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-    );
-    setState(() {
-      path = pickedImageFile!.path;
-      _pickedImage = File(pickedImageFile.path);
+  void _pickAudio() async {
+    docID = DateTime.now().toString();
+    var input = FileUploadInputElement()..accept = 'audio/*';
+    FirebaseStorage fs = FirebaseStorage.instance;
+    input.click();
+    input.onChange.listen((event) {
+      final file = input.files!.first;
+      final reader = FileReader();
+      reader.readAsDataUrl(file);
+      reader.onLoadEnd.listen((event) async {
+        var snapshot = await fs.ref().child('DemoSongs/$docID').putBlob(file);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        setState(() {
+          songUrl = downloadUrl;
+        });
+      });
     });
   }
 
-  uploadImage() async {
-    final _firebaseStorage = FirebaseStorage.instance;
-    final _imagePicker = ImagePicker();
-    PickedFile? image;
-    //Check Permissions
-    await Permission.photos.request();
-
-    var permissionStatus = await Permission.photos.status;
-
-    if (permissionStatus.isGranted) {
-      //Select Image
-      image = (await _imagePicker.pickImage(source: ImageSource.gallery))
-          as PickedFile?;
-      var file = File(image!.path);
-
-      if (image != null) {
-        //Upload to Firebase
-        var uploadTask =
-            _firebaseStorage.ref().child('images/imageName').putFile(file);
-        var snapshot = await uploadTask;
-        var downloadUrl = await snapshot.ref.getDownloadURL();
+  void _pickImage() async {
+    docID = DateTime.now().toString();
+    var input = FileUploadInputElement()..accept = 'image/*';
+    FirebaseStorage fs = FirebaseStorage.instance;
+    input.click();
+    input.onChange.listen((event) {
+      final file = input.files!.first;
+      final reader = FileReader();
+      reader.readAsDataUrl(file);
+      reader.onLoadEnd.listen((event) async {
+        var snapshot = await fs.ref().child('DemoImages/$docID').putBlob(file);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
         setState(() {
           imgUrl = downloadUrl;
         });
-      } else {
-        print('No Image Path Received');
+      });
+    });
+  }
+
+  uploadForm() async {
+    if (validator()) {
+      songData = {
+        'title': _songTitleController.text,
+        'subTitle': _songSubTitleController.text,
+        'imgUrl': imgUrl,
+        'genre': genre,
+        'songUrl': '',
+        'trending': trending,
+      };
+
+      try {
+        final collectionRef =
+            FirebaseFirestore.instance.collection('DemoSongs');
+        await collectionRef.doc(docID).set(songData);
+        Fluttertoast.showToast(
+          msg: 'Song Uploaded Successfully',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Colors.greenAccent,
+          textColor: Colors.black,
+          fontSize: 16.0,
+        );
+        _clearForm();
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: 'Error uploading Song Data to Firestore: $e',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 2,
+          backgroundColor: Colors.greenAccent,
+          textColor: Colors.black,
+          fontSize: 16.0,
+        );
       }
     } else {
-      print('Permission not granted. Try Again with permission access');
+      Fluttertoast.showToast(
+        msg: 'Please fill all the fields',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
     }
   }
+
 
   void _clearForm() {
     _songSubTitleController.clear();
     _songTitleController.clear();
     setState(() {
-      _pickedImage = null;
-      webImage = Uint8List(8);
+      imgUrl = null;
+      genre = null;
+      trending = null;
     });
   }
 
@@ -156,68 +156,193 @@ class _AddSongState extends State<AddSong> {
       appBar: AppBar(
         title: const Text('ADD SONG'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                children: [
-                  Flexible(
-                    child: TextFormField(
-                      controller: _songTitleController,
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter song title';
-                        } else {
-                          return null;
-                        }
-                      },
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: Color.fromARGB(255, 38, 37, 49),
-                        border: OutlineInputBorder(),
-                        labelText: 'Song Title',
-                        labelStyle: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 30),
-                  Flexible(
-                    child: TextFormField(
-                      controller: _songSubTitleController,
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter song sub title';
-                        } else {
-                          return null;
-                        }
-                      },
-                      decoration: const InputDecoration(
-                        filled: true,
-                        fillColor: Color.fromARGB(255, 38, 37, 49),
-                        border: OutlineInputBorder(),
-                        labelText: 'Song Sub Title',
-                        labelStyle: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 18),
-                      child: InkWell(
-                        onTap: () {
-                          _pickImage();
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: TextFormField(
+                        style: const TextStyle(color: Colors.white),
+                        controller: _songTitleController,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter song title';
+                          } else {
+                            return null;
+                          }
                         },
+                        decoration: const InputDecoration(
+                          filled: true,
+                          fillColor: Color.fromARGB(255, 38, 37, 49),
+                          border: OutlineInputBorder(),
+                          labelText: 'Song Title',
+                          labelStyle: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 30),
+                    Flexible(
+                      child: TextFormField(
+                        style: const TextStyle(color: Colors.white),
+                        controller: _songSubTitleController,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter song sub title';
+                          } else {
+                            return null;
+                          }
+                        },
+                        decoration: const InputDecoration(
+                          filled: true,
+                          fillColor: Color.fromARGB(255, 38, 37, 49),
+                          border: OutlineInputBorder(),
+                          labelText: 'Song Sub Title',
+                          labelStyle: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 18),
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 1),
+                            borderRadius: BorderRadius.circular(5),
+                            color: const Color.fromARGB(255, 38, 37, 49),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          width: MediaQuery.of(context).size.width,
+                          child: Expanded(
+                            child: DropdownButton(
+                              borderRadius: BorderRadius.circular(10),
+                              value: trending,
+                              dropdownColor: Colors.grey,
+                              icon: const Icon(Icons.arrow_drop_down),
+                              iconSize: 30,
+                              isExpanded: true,
+                              underline: const SizedBox(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              hint: const Text(
+                                'Trending or Not',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  trending = newValue!;
+                                });
+                              },
+                              items: <String>[
+                                'Yes',
+                                'No',
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 18),
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 1),
+                            borderRadius: BorderRadius.circular(5),
+                            color: const Color.fromARGB(255, 38, 37, 49),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          width: MediaQuery.of(context).size.width,
+                          child: Expanded(
+                            child: DropdownButton(
+                              borderRadius: BorderRadius.circular(10),
+                              value: genre,
+                              dropdownColor: Colors.grey,
+                              icon: const Icon(Icons.arrow_drop_down),
+                              iconSize: 30,
+                              isExpanded: true,
+                              underline: const SizedBox(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              hint: const Text(
+                                'Select Genre',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  genre = newValue!;
+                                });
+                              },
+                              items: <String>[
+                                'Hip Hop',
+                                'House',
+                                'Rock',
+                                'Trap',
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 18),
+                        child: InkWell(
+                          onTap: () => _pickImage(),
+                          child: Container(
+                            height: 50,
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: const Color.fromARGB(255, 38, 37, 49),
+                            ),
+                            child: const Center(
+                                child: Text(
+                              'Upload Image',
+                              style: TextStyle(color: Colors.white),
+                            )),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 18),
                         child: Container(
                           height: 50,
                           width: MediaQuery.of(context).size.width,
@@ -227,154 +352,126 @@ class _AddSongState extends State<AddSong> {
                           ),
                           child: const Center(
                               child: Text(
-                            'Upload Image',
+                            'Upload Song',
                             style: TextStyle(color: Colors.white),
                           )),
                         ),
                       ),
                     ),
-                  ),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   Flexible(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 18),
+                      padding: const EdgeInsets.only(right: 18),
                       child: Container(
-                        height: 50,
-                        width: MediaQuery.of(context).size.width,
+                        height: 100,
+                        width: 100,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
                           color: const Color.fromARGB(255, 38, 37, 49),
                         ),
-                        child: const Center(
-                            child: Text(
-                          'Upload Song',
-                          style: TextStyle(color: Colors.white),
-                        )),
+                        child: Center(
+                          child: Container(
+                            child: imgUrl == null
+                                ? Image.asset(
+                                    'Assets/defaultImage.jpg',
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.network(
+                                    imgUrl!,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 18),
-                    child: Container(
-                      height: 100,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: const Color.fromARGB(255, 38, 37, 49),
-                      ),
-                      child: Center(
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 15),
+                      child: InkWell(
+                        onTap: () {
+                          _clearForm();
+                        },
                         child: Container(
-                          child: _pickedImage == null
-                              ? Image.asset(
-                                  'Assets/defaultImage.jpg',
-                                  fit: BoxFit.cover,
-                                )
-                              : kIsWeb
-                                  ? Image.network(
-                                      path,
-                                      fit: BoxFit.fill,
-                                    )
-                                  : Image.memory(
-                                      webImage,
-                                      fit: BoxFit.fill,
-                                    ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 20, horizontal: 15),
-                    child: InkWell(
-                      onTap: () {
-                        _clearForm();
-                      },
-                      child: Container(
-                        // width: MediaQuery.of(context).size.width,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(
-                            10,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(
+                              10,
+                            ),
                           ),
-                        ),
-                        child: const Text(
-                          'Clear',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
+                          child: const Center(
+                            child: Text(
+                              'Clear',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 20, horizontal: 15),
-                    child: InkWell(
-                      onTap: () {
-                        print(
-                            '====================== NEW SONG BUTTON ======================');
-                        // uploadImageToFirebase();
-                        uploadImage();
-                        print('=========> $imgUrl');
-                        // _uploadForm();
-                      },
-                      child: Container(
-                        // width: MediaQuery.of(context).size.width,/
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(
-                            10,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 15),
+                      child: InkWell(
+                        onTap: () => uploadForm(),
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(
+                              10,
+                            ),
                           ),
-                        ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
+                          child: const Center(
+                            child: Text(
+                              'Save',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
+          // child: Expanded(
+          //   child: Column(
+          //     children: [
+          //       Row(
+          //         children: const [
+          //           TextField(
+          //             decoration: InputDecoration(
+          //               border: OutlineInputBorder(),
+          //               labelText: 'Song Name',
+          //               labelStyle: TextStyle(color: Colors.white),
+          //             ),
+          //           ),
+          //         ],
+          //       )
+          //     ],
+          //   ),
+          // ),
         ),
-        // child: Expanded(
-        //   child: Column(
-        //     children: [
-        //       Row(
-        //         children: const [
-        //           TextField(
-        //             decoration: InputDecoration(
-        //               border: OutlineInputBorder(),
-        //               labelText: 'Song Name',
-        //               labelStyle: TextStyle(color: Colors.white),
-        //             ),
-        //           ),
-        //         ],
-        //       )
-        //     ],
-        //   ),
-        // ),
       ),
     );
   }

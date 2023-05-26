@@ -10,12 +10,16 @@ class GridViewBox extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.imageurl,
+    required this.trending,
+    required this.genre,
   });
 
   final String id;
   final String title;
   final String subtitle;
   final String imageurl;
+  final String trending;
+  final String genre;
 
   @override
   State<GridViewBox> createState() => _GridViewBoxState();
@@ -58,6 +62,8 @@ class _GridViewBoxState extends State<GridViewBox> {
           Subtitle: widget.subtitle,
           Title: widget.title,
           id: widget.id,
+          trending: widget.trending,
+          genre: widget.genre,
         ),
       ),
     );
