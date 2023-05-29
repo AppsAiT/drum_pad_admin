@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import '../widgets/gridShow.dart';
 
 class AllSongsPage extends StatefulWidget {
-  const AllSongsPage({super.key});
+  const AllSongsPage({
+    super.key,
+    required this.user,
+  });
+  final String user;
 
   @override
   State<AllSongsPage> createState() => _AllSongsPageState();
@@ -18,7 +22,27 @@ class _AllSongsPageState extends State<AllSongsPage> {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
-        title: const Text('ALL SONGS'),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.blue,
+                Colors.cyan,
+                Colors.cyanAccent,
+                Colors.yellow,
+              ],
+            ),
+          ),
+        ),
+        title: const Text(
+          'ALL SONGS',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+            letterSpacing: 3,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(15),
@@ -230,6 +254,7 @@ class _AllSongsPageState extends State<AllSongsPage> {
               ],
             ),
             GridDisplay(
+              user: widget.user,
               fgenre: fgenre,
               filter: filterOn,
               ftrending: ftrending,

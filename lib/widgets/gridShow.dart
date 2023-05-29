@@ -6,12 +6,14 @@ class GridDisplay extends StatefulWidget {
   bool filter;
   String? ftrending;
   String? fgenre;
+  final String user;
 
   GridDisplay({
     super.key,
     required this.filter,
     required this.ftrending,
     required this.fgenre,
+    required this.user,
   });
 
   @override
@@ -73,8 +75,10 @@ class _GridDisplayState extends State<GridDisplay> {
                         title: filteredSongs![index]['title'],
                         subtitle: filteredSongs![index]['subTitle'],
                         imageurl: filteredSongs![index]['imgUrl'],
+                        songurl: filteredSongs![index]['songUrl'],
                         trending: filteredSongs![index]['trending'],
                         genre: filteredSongs![index]['genre'],
+                        user: widget.user,
                       );
                     },
                   );

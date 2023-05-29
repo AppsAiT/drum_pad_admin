@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../pages/editSongPage.dart';
 
@@ -12,14 +14,18 @@ class GridViewBox extends StatefulWidget {
     required this.imageurl,
     required this.trending,
     required this.genre,
+    required this.songurl,
+    required this.user,
   });
 
   final String id;
   final String title;
   final String subtitle;
   final String imageurl;
+  final String songurl;
   final String trending;
   final String genre;
+  final String user;
 
   @override
   State<GridViewBox> createState() => _GridViewBoxState();
@@ -27,19 +33,22 @@ class GridViewBox extends StatefulWidget {
 
 class _GridViewBoxState extends State<GridViewBox> {
   delete() {
-    FirebaseFirestore.instance.collection('songs').doc(widget.id).delete().then(
-        (doc) {
-      SnackBar snackBar = SnackBar(
-        content: Text(
-          'song Deleted : ${widget.title}, ${widget.id}',
-          style: const TextStyle(
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: const Color.fromARGB(255, 32, 212, 38),
-        duration: const Duration(seconds: 2),
+    FirebaseFirestore.instance
+        .collection('DemoSongs')
+        .doc(widget.id)
+        .delete()
+        .then((doc) {
+      FirebaseStorage.instance.ref().child('DemoImages/${widget.id}').delete();
+      FirebaseStorage.instance.ref().child('DemoSongs/${widget.id}').delete();
+      Fluttertoast.showToast(
+        msg: 'Song Deleted : ${widget.title}, ${widget.id}',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.black,
+        fontSize: 16.0,
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }, onError: (e) {
       SnackBar snackBar = SnackBar(
         content: Text(
@@ -59,11 +68,13 @@ class _GridViewBoxState extends State<GridViewBox> {
       MaterialPageRoute(
         builder: (context) => EditSong(
           Imageurl: widget.imageurl,
+          songUrl: widget.songurl,
           Subtitle: widget.subtitle,
           Title: widget.title,
           id: widget.id,
           trending: widget.trending,
           genre: widget.genre,
+          user: widget.user,
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drum_pad_admin/pages/addSong.dart';
 import 'package:drum_pad_admin/pages/allSongsPage.dart';
+import 'package:drum_pad_admin/pages/loginScreen.dart';
 import 'package:drum_pad_admin/widgets/homePageTiles.dart';
 import 'package:drum_pad_admin/widgets/sideBar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,6 +57,29 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  _signOut() {
+    FirebaseAuth.instance.signOut();
+    SnackBar snackBar = const SnackBar(
+      content: Text(
+        'Logout Successfull...',
+        style: TextStyle(
+          fontSize: 18,
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      backgroundColor: Colors.yellowAccent,
+      duration: Duration(seconds: 2),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (builder) => const LoginPage(),
+      ),
+    );
+  }
+
   @override
   void initState() {
     dateText = formatCurrentLiveDate(DateTime.now());
@@ -69,23 +93,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // bottomSheet: Row(
-      //   mainAxisAlignment: MainAxisAlignment.end,
-      //   children: [
-      //     Container(
-      //       color: Colors.black87,
-      //       width: MediaQuery.of(context).size.width,
-      //       child: const Text(
-      //         '--- Developed by AppsAiT ---',
-      //         style: TextStyle(
-      //           color: Colors.grey,
-      //           fontSize: 18,
-      //           fontWeight: FontWeight.w600,
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -163,6 +170,45 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: InkWell(
+                      onTap: () => _signOut(),
+                      child: Container(
+                        width: 130,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.blue,
+                              Colors.cyan,
+                              Colors.cyanAccent,
+                              Colors.yellow,
+                            ],
+                          ),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Logout',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -174,7 +220,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (builder) => const AllSongsPage()));
+                              builder: (builder) => AllSongsPage(user: name)));
                     },
                     child: HomePageTile(
                       title: 'ALL SONGS',
@@ -190,7 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (builder) => const AddSong()));
+                              builder: (builder) => AddSong(user: name)));
                     },
                     child: HomePageTile(
                       title: 'ADD SONGS',
