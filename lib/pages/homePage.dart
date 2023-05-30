@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drum_pad_admin/pages/addSong.dart';
 import 'package:drum_pad_admin/pages/allSongsPage.dart';
 import 'package:drum_pad_admin/pages/loginScreen.dart';
+import 'package:drum_pad_admin/pages/membershipPage.dart';
 import 'package:drum_pad_admin/widgets/homePageTiles.dart';
-import 'package:drum_pad_admin/widgets/sideBar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -241,6 +241,22 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: HomePageTile(
                       title: 'ADD SONGS',
                       image: 'Assets/addSongs.png',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 13, left: 13, right: 13, bottom: 8),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (builder) => const MembershipPage()));
+                    },
+                    child: HomePageTile(
+                      title: 'MEMBERSHIP PLANS',
+                      image: 'Assets/exclusive.png',
                     ),
                   ),
                 ),

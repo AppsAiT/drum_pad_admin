@@ -16,7 +16,7 @@ class HomePageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 200,
-      width: 180,
+      width: 200,
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 75, 75, 75),
         borderRadius: BorderRadius.circular(10),

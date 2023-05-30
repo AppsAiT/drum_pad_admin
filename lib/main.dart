@@ -1,6 +1,7 @@
 import 'package:drum_pad_admin/pages/addSong.dart';
 import 'package:drum_pad_admin/pages/allSongsPage.dart';
 import 'package:drum_pad_admin/pages/loginScreen.dart';
+import 'package:drum_pad_admin/pages/membershipPage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'pages/homePage.dart';
@@ -38,10 +39,11 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.cyan,
       ),
-      home: const LoginPage(),
-      // home: const MyHomePage(title: 'DRUM PAD ADMIN'),
+      // home: const LoginPage(),
+      home: const MyHomePage(title: 'DRUM PAD ADMIN'),
       // home: const UploadImage(),
       // home: const AllSongsPage(),
+      // home: const MembershipPage(),
     );
   }
 }
