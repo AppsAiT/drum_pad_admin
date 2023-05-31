@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 class EditSong extends StatefulWidget {
   EditSong({
@@ -37,8 +38,13 @@ class _EditSongState extends State<EditSong> {
       _songSubTitleController;
   var NewImageUrl = null, NewSongUrl = null;
   String? newTrending, newGenre;
+  double imageuploadProgress = 0, audioUploadProgress = 0;
+  bool imageUploading = false, audioUploading = false;
 
   void _pickAudio() async {
+    setState(() {
+      audioUploading = true;
+    });
     var input = FileUploadInputElement()..accept = 'audio/*';
     FirebaseStorage fs = FirebaseStorage.instance;
     input.click();
@@ -46,52 +52,83 @@ class _EditSongState extends State<EditSong> {
       final file = input.files!.first;
       final reader = FileReader();
       reader.readAsDataUrl(file);
-      reader.onLoadEnd.listen((event) async {
-        var snapshot =
-            await fs.ref().child('DemoSongs/${widget.id}').putBlob(file);
-        String downloadUrl = await snapshot.ref.getDownloadURL();
-        Fluttertoast.showToast(
-          msg: 'Audio Uploaded Successfully',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 2,
-          backgroundColor: Colors.greenAccent,
-          textColor: Colors.black,
-          fontSize: 16.0,
-        );
-        setState(() {
-          NewSongUrl = downloadUrl;
-        });
-      });
+      reader.onLoadEnd.listen(
+        (event) async {
+          var ref = fs.ref().child('DemoSong/${widget.id}');
+          var uploadTask = ref.putBlob(file);
+          uploadTask.snapshotEvents.listen(
+            (TaskSnapshot snapshot) {
+              double progress =
+                  snapshot.bytesTransferred / snapshot.totalBytes.toDouble();
+              setState(() {
+                audioUploadProgress = progress;
+              });
+            },
+          );
+          await uploadTask;
+          String downloadUrl = await ref.getDownloadURL();
+          Fluttertoast.showToast(
+            msg: 'Song Uploaded Successfully',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Colors.greenAccent,
+            textColor: Colors.black,
+            fontSize: 16.0,
+          );
+          setState(() {
+            NewSongUrl = downloadUrl;
+            audioUploading = false;
+          });
+        },
+      );
     });
   }
 
   void _pickImage() async {
+    setState(() {
+      imageUploading = true;
+    });
     var input = FileUploadInputElement()..accept = 'image/*';
     FirebaseStorage fs = FirebaseStorage.instance;
     input.click();
-    input.onChange.listen((event) {
-      final file = input.files!.first;
-      final reader = FileReader();
-      reader.readAsDataUrl(file);
-      reader.onLoadEnd.listen((event) async {
-        var snapshot =
-            await fs.ref().child('DemoImages/${widget.id}').putBlob(file);
-        String downloadUrl = await snapshot.ref.getDownloadURL();
-        Fluttertoast.showToast(
-          msg: 'Image Uploaded Successfully',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 2,
-          backgroundColor: Colors.greenAccent,
-          textColor: Colors.black,
-          fontSize: 16.0,
+    input.onChange.listen(
+      (event) {
+        final file = input.files!.first;
+        final reader = FileReader();
+        reader.readAsDataUrl(file);
+        reader.onLoadEnd.listen(
+          (event) async {
+            var ref = fs.ref().child('DemoImages/${widget.id}');
+            var uploadTask = ref.putBlob(file);
+            uploadTask.snapshotEvents.listen(
+              (TaskSnapshot snapshot) {
+                double progress =
+                    snapshot.bytesTransferred / snapshot.totalBytes.toDouble();
+                setState(() {
+                  imageuploadProgress = progress;
+                });
+              },
+            );
+            await uploadTask;
+            String downloadUrl = await ref.getDownloadURL();
+            Fluttertoast.showToast(
+              msg: 'Image Uploaded Successfully',
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 2,
+              backgroundColor: Colors.greenAccent,
+              textColor: Colors.black,
+              fontSize: 16.0,
+            );
+            setState(() {
+              NewImageUrl = downloadUrl;
+              imageUploading = false;
+            });
+          },
         );
-        setState(() {
-          NewImageUrl = downloadUrl;
-        });
-      });
-    });
+      },
+    );
   }
 
   @override
@@ -644,6 +681,48 @@ class _EditSongState extends State<EditSong> {
                       ],
                     ),
                   ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (imageUploading == true)
+                    LinearPercentIndicator(
+                      width: 250,
+                      barRadius: const Radius.circular(10),
+                      lineHeight: 14.0,
+                      percent: imageuploadProgress,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                    )
+                  else
+                    LinearPercentIndicator(
+                      width: 250,
+                      barRadius: const Radius.circular(10),
+                      lineHeight: 14.0,
+                      percent: 1.0,
+                      backgroundColor: const Color.fromARGB(0, 158, 158, 158),
+                      progressColor: const Color.fromARGB(0, 33, 149, 243),
+                    ),
+                  const SizedBox(width: 20),
+                  if (audioUploading == true)
+                    LinearPercentIndicator(
+                      width: 250,
+                      barRadius: const Radius.circular(10),
+                      lineHeight: 14.0,
+                      percent: audioUploadProgress,
+                      backgroundColor: Colors.grey,
+                      progressColor: Colors.blue,
+                    )
+                  else
+                    LinearPercentIndicator(
+                      width: 250,
+                      barRadius: const Radius.circular(10),
+                      lineHeight: 14.0,
+                      percent: 1.0,
+                      backgroundColor: const Color.fromARGB(0, 158, 158, 158),
+                      progressColor: const Color.fromARGB(0, 33, 149, 243),
+                    ),
                 ],
               ),
               Row(

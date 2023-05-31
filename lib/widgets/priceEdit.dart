@@ -12,6 +12,8 @@ class PriceEdit extends StatelessWidget {
   String type;
   TextEditingController controller = TextEditingController();
 
+  update() {}
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(

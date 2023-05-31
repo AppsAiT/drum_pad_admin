@@ -3,6 +3,8 @@ import 'package:drum_pad_admin/widgets/membershipCard.dart';
 import 'package:drum_pad_admin/widgets/priceEdit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class MembershipPage extends StatefulWidget {
   const MembershipPage({super.key});
@@ -22,29 +24,113 @@ class _MembershipPageState extends State<MembershipPage> {
     super.initState();
   }
 
-  // getdata() async {
-  //   await FirebaseFirestore.instance
-  //       .collection('membership')
-  //       .doc('Gold')
-  //       .get()
-  //       .then((value) {
-  //     gold = value.data();
-  //   });
-  //   // await FirebaseFirestore.instance
-  //   //     .collection('membership')
-  //   //     .doc('Diamond')
-  //   //     .get()
-  //   //     .then((value) {
-  //   //   diamond = value.data()!;
-  //   // });
-  //   // await FirebaseFirestore.instance
-  //   //     .collection('membership')
-  //   //     .doc('Platinum')
-  //   //     .get()
-  //   //     .then((value) {
-  //   //   platinum = value.data()!;
-  //   // });
-  // }
+  void goldUpdate() {
+    try {
+      FirebaseFirestore.instance.collection('membership').doc('Gold').update({
+        'amount': _goldPriceController.text,
+        'updatedOn': DateTime.now().toString(),
+      });
+      Fluttertoast.showToast(
+        msg: 'Gold Membership Price Updated',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.greenAccent,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+      _goldPriceController.clear();
+    } catch (error) {
+      Fluttertoast.showToast(
+        msg: 'Error : ${error.toString()}',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: const Color.fromARGB(255, 239, 111, 111),
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  void diamondUpdate() {
+    try {
+      FirebaseFirestore.instance
+          .collection('membership')
+          .doc('Diamond')
+          .update({
+        'amount': _diamondPriceController.text,
+        'updatedOn': DateTime.now().toString(),
+      });
+      Fluttertoast.showToast(
+        msg: 'Diamond Membership Price Updated',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.greenAccent,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+      _diamondPriceController.clear();
+    } catch (error) {
+      Fluttertoast.showToast(
+        msg: 'Error : ${error.toString()}',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: const Color.fromARGB(255, 239, 111, 111),
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  void platinumUpdate() {
+    try {
+      FirebaseFirestore.instance
+          .collection('membership')
+          .doc('Platinum')
+          .update({
+        'amount': _platinumPriceController.text,
+        'updatedOn': DateTime.now().toString(),
+      });
+      Fluttertoast.showToast(
+        msg: 'Platinum Membership Price Updated',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.greenAccent,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+      _platinumPriceController.clear();
+    } catch (error) {
+      Fluttertoast.showToast(
+        msg: 'Error : ${error.toString()}',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: const Color.fromARGB(255, 239, 111, 111),
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  void clear(controller) {
+    controller.clear();
+  }
+
+  String? numberValidator(String value) {
+    if (value == null) {
+      return null;
+    }
+    final n = num.tryParse(value);
+    if (n == null) {
+      return '"$value" is not a valid number';
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,20 +248,242 @@ class _MembershipPageState extends State<MembershipPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                PriceEdit(
-                  price: '29.99',
-                  type: 'Gold',
-                  controller: _goldPriceController,
+                SizedBox(
+                  width: 300,
+                  height: 300,
+                  child: Column(
+                    children: [
+                      Flexible(
+                        child: TextFormField(
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                          controller: _goldPriceController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0123456789.]')),
+                          ],
+                          decoration: const InputDecoration(
+                            filled: true,
+                            fillColor: Color.fromARGB(255, 38, 37, 49),
+                            border: OutlineInputBorder(),
+                            labelText: 'Gold Premium New Price',
+                            labelStyle: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 10),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: InkWell(
+                                onTap: () => clear(_goldPriceController),
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Clear',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Flexible(
+                              child: InkWell(
+                                onTap: () => goldUpdate(),
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Update',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                PriceEdit(
-                  price: '59.99',
-                  type: 'Diamod',
-                  controller: _diamondPriceController,
+                SizedBox(
+                  width: 300,
+                  height: 300,
+                  child: Column(
+                    children: [
+                      Flexible(
+                        child: TextFormField(
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                          controller: _diamondPriceController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0123456789.]')),
+                          ],
+                          decoration: const InputDecoration(
+                            filled: true,
+                            fillColor: Color.fromARGB(255, 38, 37, 49),
+                            border: OutlineInputBorder(),
+                            labelText: 'Diamond Premium New Price',
+                            labelStyle: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 10),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: InkWell(
+                                onTap: () => clear(_diamondPriceController),
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Clear',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Flexible(
+                              child: InkWell(
+                                onTap: () => diamondUpdate(),
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Update',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                PriceEdit(
-                  price: '79.99',
-                  type: 'Platinum',
-                  controller: _platinumPriceController,
+                SizedBox(
+                  width: 300,
+                  height: 300,
+                  child: Column(
+                    children: [
+                      Flexible(
+                        child: TextFormField(
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                          controller: _platinumPriceController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0123456789.]')),
+                          ],
+                          decoration: const InputDecoration(
+                            filled: true,
+                            fillColor: Color.fromARGB(255, 38, 37, 49),
+                            border: OutlineInputBorder(),
+                            labelText: 'Platinum Premium New Price',
+                            labelStyle: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 10),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: InkWell(
+                                onTap: () => clear(_platinumPriceController),
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Clear',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Flexible(
+                              child: InkWell(
+                                onTap: () => platinumUpdate(),
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'Update',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
