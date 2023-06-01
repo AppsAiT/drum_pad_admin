@@ -532,7 +532,7 @@ class _EditSongState extends State<EditSong> {
                               color: const Color.fromARGB(255, 38, 37, 49),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 15),
-                            width: MediaQuery.of(context).size.width / 2 - 20,
+                            width: MediaQuery.of(context).size.width / 2 - 60,
                             child: Expanded(
                               child: DropdownButton(
                                 borderRadius: BorderRadius.circular(10),
@@ -578,7 +578,7 @@ class _EditSongState extends State<EditSong> {
                               color: const Color.fromARGB(255, 38, 37, 49),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 15),
-                            width: MediaQuery.of(context).size.width / 2 - 20,
+                            width: MediaQuery.of(context).size.width / 2 - 60,
                             child: Expanded(
                               child: DropdownButton(
                                 borderRadius: BorderRadius.circular(10),
